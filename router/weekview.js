@@ -8,7 +8,7 @@ const { findAll } = require("./data");
 
 dataBaseConnection().then(dbs => {
     router.get("/weekview", cors(), async (req, res) => {
-      console.log("GET/weekview", req.body)
+      console.log("GET/weekview", req.query)
       let  weekviewdates=req.query.weekviewdates;
       var weekbookings=[];
       let dates = daysBetweenDates(req.query.fromDate, req.query.toDate)
