@@ -60,7 +60,6 @@ dataBaseConnection().then(dbs => {
     findOne(dbs, collections.kot,{bookingId: new ObjectID(req.body.bookingId)})
     .then(result => {
       if(result){
-       // console.log(result)
        res.status(400).json({msg:"kot already exist!"})
       
       }else{
@@ -70,7 +69,6 @@ dataBaseConnection().then(dbs => {
     .then(result => {
       if(result){
         x=getBody(req.body,result)
-        //console.log("x",x)
           return insertOne(dbs, collections.kot,{...x[0], bookingId: new ObjectID(x[0].bookingId)})
       }else{
         res.status(401).send()
@@ -136,27 +134,63 @@ console.log("PATCH /kot", req.body,body)
   router.patch("/kotById", cors(), async (req, res) => {
     const {bookingId, ...body} = req.body
     let x=[]
-    console.log("PATCH /KOTbyId", body.kotArray[0])
+    console.log("PATCH /KOTbyId", body.kotArray,body.kotId)
     try {
-      // x=getPatchKot(body)
-     console.log(body.kotId)
-      updateOne(dbs, collections.kot, {"kot.kotId": body.kotId }, {$push: { kot: body.kotArray}}).then(result =>{ 
-        console.log("result",result)
+      findOne(dbs, collections.kot,{bookingId: new ObjectID(bookingId)})
+    .then(result => {
+      if(result){
+      x=getPatchKot(result,body.kotArray,body.kotId)
+     console.log("result",x)
+      updateOne(dbs, collections.kot, {bookingId: new ObjectID(bookingId)}, {$set: { kot: x}}).then(result =>{ 
+        //console.log("result",result)
         res.status(200).send()});
+      }
+      else{
+        console.log("entered")
+      }
+    })
     } catch (error) {
       console.log(error);
     }
   });
 
+  // router.patch("/kotById", cors(), async (req, res) => {
+  //   const {bookingId, ...body} = req.body
+  //   let x=[]
+  //   console.log("PATCH /KOTbyId", body.kotArray[0])
+  //   try {
+  //     // x=getPatchKot(body)
+  //    console.log(body.kotId)
+  //     updateOne(dbs, collections.kot, {"kot.kotId": body.kotId }, {$push: { kot: body.kotArray[0]}}).then(result =>{ 
+  //       console.log("result",result)
+  //       res.status(200).send()});
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // });
+
 })
 
-function getPatchKot(res){
+function getPatchKot(res,kotUpdate,kotId){
+  console.log(res," ",kotUpdate)
   var body=[]
-  body.push({
-    //kotId: "KOT"+(1000000+Number(seq.seq)),
-    kotArray : res.kotArray
-  })
-  console.log(body)
+  for(var i=0;i<res.kot.length;i++)
+  {
+    if(res.kot[i].kotId==kotId)
+    {
+      body.push({
+        kotId: res.kot[i].kotId,
+        kotArray : kotUpdate
+      })
+    }
+    else{
+      body.push({
+        kotId: res.kot[i].kotId,
+        kotArray : res.kot[i].kotArray
+      })
+    } 
+  }
+  console.log("body",body)
   return body
 }
 
@@ -167,13 +201,10 @@ function getByKotId(res,id){
   {
     if(res.kot[i].kotId == id){
       kot.push({
-        //bookingId: res.bookingId ,
-        //kot: res.kot[i]
         kot: res.kot[i].kotArray
       })
     }
   }
-  //console.log(kot)
   return kot
 }
 
@@ -206,8 +237,6 @@ function getKot(sam,seq){
       kotArray: sam
 
     })
-  //}
-  //console.log("kot",kot)
 return kot
 
 }
